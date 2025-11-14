@@ -1,4 +1,4 @@
-package dados3D;
+package dados2D;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;

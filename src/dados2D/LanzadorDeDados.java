@@ -1,4 +1,4 @@
-package dados3D;
+package dados2D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,7 +39,7 @@ public class LanzadorDeDados extends JDialog {
         lblCaras.setForeground(Color.WHITE);
         lblCaras.setFont(new Font("Arial", Font.PLAIN, 18));
 
-        comboCaras = new JComboBox<>(new Integer[]{3, 6, 9, 12, 15, 18, 21});
+        comboCaras = new JComboBox<>(new Integer[]{3, 9, 15, 21});
         comboCaras.setFont(new Font("Arial", Font.PLAIN, 18));
         comboCaras.setPreferredSize(new Dimension(100, 35));
         comboCaras.addActionListener(e -> actualizarTituloDado());

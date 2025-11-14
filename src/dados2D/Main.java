@@ -1,38 +1,22 @@
-No hay nada difícil, solo pasos bien explicados. Vamos a conectar este lanzador de dados a tu juego de rol paso a paso, de forma clara y práctica.
-
-🔗 ¿Cómo conectar el lanzador de dados a tu juego?
-La clave está en comunicar tu lanzador (el Main con la interfaz gráfica) con la lógica de tu juego (personajes, combate, etc.).
-
-Existen varias formas de hacerlo, pero la más común y limpia es usar eventos o métodos de retorno para que cuando el usuario tire el dado, el resultado llegue a tu juego y lo use.
-
-
-✅ Forma 1: Lanzador como una "ventana emergente"
-Es la más común: tu juego lanza una ventana con el dado, el usuario lo tira, y cuando se cierra, el juego recibe el resultado.
-
-🔧 Paso 1: Hacer que Main devuelva el resultado
-Vamos a convertir Main en una ventana modal que se espere a que el usuario tire el dado y devuelva el valor.
-
-Creamos una nueva clase LanzadorDeDados.java:
-package dados3D;
+package dados2D;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class LanzadorDeDados extends JDialog {
+public class Main extends JFrame {
     private String labelResultadoText = "Selecciona el dado y tira";
     private JComboBox<Integer> comboCaras;
     private JPanel panelDadoContainer;
     private PanelDado2D panelDado2D;
     private JPanel panelResultado;
-    private JLabel lblTitulo;
-    private Integer resultado = null; // Variable para almacenar el resultado
+    private JLabel lblTitulo; // Hacemos el título un campo de clase
 
-    public LanzadorDeDados(Frame parent) {
-        super(parent, "Tirar Dado", true); // Modal
+    public Main() {
+        setTitle("Juego de Rol - Tirar Dados");
         setSize(1150, 850);
-        setLocationRelativeTo(parent);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
 
         JPanel panelPrincipal = crearPanelConFondo();
         panelPrincipal.setLayout(new BorderLayout(30, 30));
@@ -54,12 +38,14 @@ public class LanzadorDeDados extends JDialog {
         lblCaras.setForeground(Color.WHITE);
         lblCaras.setFont(new Font("Arial", Font.PLAIN, 18));
 
-        comboCaras = new JComboBox<>(new Integer[]{3, 6, 9, 12, 15, 18, 21});
+        comboCaras = new JComboBox<>(new Integer[]{3, 9, 15, 21});
         comboCaras.setFont(new Font("Arial", Font.PLAIN, 18));
         comboCaras.setPreferredSize(new Dimension(100, 35));
+        // --- AÑADIMOS ESTE LISTENER ---
         comboCaras.addActionListener(e -> actualizarTituloDado());
+        // --- FIN AÑADIDO ---
 
-        JButton btnTirar = crearBoton("🎲 Tirar Dado");
+        JButton btnTirar = crearBoton("Tirar Dado");
         btnTirar.setFont(new Font("Arial", Font.BOLD, 20));
         btnTirar.setPreferredSize(new Dimension(220, 50));
         btnTirar.addActionListener(e -> tirarDado());
@@ -73,16 +59,18 @@ public class LanzadorDeDados extends JDialog {
         panelDadoContainer = new JPanel(new BorderLayout());
         panelDadoContainer.setOpaque(false);
 
+        // Inicializamos el título aquí también
         lblTitulo = new JLabel("Dado de " + comboCaras.getSelectedItem() + " caras", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         panelDadoContainer.add(lblTitulo, BorderLayout.NORTH);
 
-        actualizarPanelDado();
+        actualizarPanelDado(); // Inicializa el panel del dado
 
         centro.add(panelDadoContainer, BorderLayout.CENTER);
 
+        // Panel de resultado con dibujo personalizado
         panelResultado = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -91,9 +79,11 @@ public class LanzadorDeDados extends JDialog {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
+                // Fondo semitransparente negro
                 g2d.setColor(new Color(0, 0, 0, 180));
                 g2d.fillRect(0, 0, getWidth(), getHeight());
 
+                // Texto
                 g2d.setFont(new Font("Arial", Font.BOLD, 32));
                 g2d.setColor(Color.WHITE);
                 String texto = labelResultadoText;
@@ -113,19 +103,23 @@ public class LanzadorDeDados extends JDialog {
         add(panelPrincipal);
     }
 
+    // --- MÉTODO NUEVO PARA ACTUALIZAR SOLO EL TÍTULO ---
     private void actualizarTituloDado() {
         int caras = (Integer) comboCaras.getSelectedItem();
         lblTitulo.setText("Dado de " + caras + " caras");
     }
+    // --- FIN MÉTODO NUEVO ---
 
     private void actualizarPanelDado() {
+        // Removemos solo el panel del dado, no el título
         Component[] components = panelDadoContainer.getComponents();
         for (Component c : components) {
-            if (!(c instanceof JLabel)) {
+            if (!(c instanceof JLabel)) { // Mantenemos el título
                 panelDadoContainer.remove(c);
             }
         }
 
+        // Creamos y añadimos el panel del dado
         panelDado2D = new PanelDado2D();
         panelDado2D.setNumCaras((Integer) comboCaras.getSelectedItem());
         panelDadoContainer.add(panelDado2D, BorderLayout.CENTER);
@@ -145,30 +139,25 @@ public class LanzadorDeDados extends JDialog {
         if (panelDado2D != null) {
             panelDado2D.setAnimando(true);
         }
-        panelResultado.repaint();
+        panelResultado.repaint(); // Refresca el texto
 
         final int[] contador = {0};
-        Timer animacion = new Timer(60, e -> {
+        Timer animacion = new Timer(40, e -> {
             if (panelDado2D != null) {
-                panelDado2D.actualizarContadorAnimacion();
+                panelDado2D.actualizarContadorAnimacion(); 
             }
 
             contador[0]++;
             if (contador[0] >= 35) {
                 ((Timer) e.getSource()).stop();
-                int valor = dado.tirar();
-                labelResultadoText = "✅ Resultado: " + valor;
-                // Guardamos el resultado para que el juego lo pueda leer
-                resultado = valor;
+                int resultado = dado.tirar();
+                labelResultadoText = "✅ Resultado: " + resultado;
                 if (panelDado2D != null) {
                     panelDado2D.setAnimando(false);
-                    panelDado2D.setValor(valor);
+                    panelDado2D.setValor(resultado);
                     panelDado2D.setNumCaras(caras);
                 }
-                panelResultado.repaint();
-
-                // Opcional: Cerrar la ventana después de mostrar el resultado
-                // SwingUtilities.invokeLater(() -> this.dispose());
+                panelResultado.repaint(); // Refresca el texto
             }
         });
         animacion.start();
@@ -210,82 +199,10 @@ public class LanzadorDeDados extends JDialog {
         return boton;
     }
 
-    // Método para obtener el resultado
-    public Integer obtenerResultado() {
-        return resultado;
-    }
-}
-
-🔧 Paso 2: Llamar al lanzador desde tu juego y usar el resultado
-Modificamos tu Juego.java para abrir la ventana del dado y usar el resultado:
-
-import dados3D.LanzadorDeDados;
-import javax.swing.SwingUtilities;
-
-public class Juego {
-    private Personaje jugador;
-    private Personaje enemigo;
-
-    public Juego() {
-        jugador = new Personaje("Héroe", 100, 15);
-        enemigo = new Personaje("Monstruo", 80, 12);
-    }
-
-    public void atacarConDado() {
-        LanzadorDeDados lanzador = new LanzadorDeDados(null); // null si no tienes una ventana principal
-        lanzador.setVisible(true); // Esto es modal, se queda aquí hasta que se cierre
-
-        Integer resultado = lanzador.obtenerResultado();
-        if (resultado != null) {
-            System.out.println("Has tirado el dado y salió: " + resultado);
-            int danio = jugador.getAtaque() + resultado;
-            enemigo.recibirDanio(danio);
-            System.out.println("Has atacado al " + enemigo.getNombre() + " por " + danio + " puntos de daño.");
-            System.out.println("Vida restante del enemigo: " + enemigo.getVida());
-        } else {
-            System.out.println("No se obtuvo un resultado del dado.");
-        }
-    }
-
     public static void main(String[] args) {
-        Juego juego = new Juego();
-
-        // Ejemplo de uso: tirar un dado para atacar
         SwingUtilities.invokeLater(() -> {
-            juego.atacarConDado();
+            Main ventana = new Main();
+            ventana.setVisible(true);
         });
     }
 }
-
-class Personaje {
-    private String nombre;
-    private int vida;
-    private int ataque;
-
-    public Personaje(String nombre, int vida, int ataque) {
-        this.nombre = nombre;
-        this.vida = vida;
-        this.ataque = ataque;
-    }
-
-    public void recibirDanio(int danio) {
-        this.vida -= danio;
-        if (this.vida < 0) this.vida = 0;
-    }
-
-    public int getVida() { return vida; }
-    public String getNombre() { return nombre; }
-    public int getAtaque() { return ataque; }
-}
-
-✅ Resumen de la conexión:
-Tu juego llama a LanzadorDeDados como una ventana emergente.
-El usuario elige caras, tira el dado.
-El lanzador guarda el resultado en una variable.
-El lanzador cierra la ventana.
-Tu juego recupera el resultado con lanzador.obtenerResultado().
-Tu juego usa ese número para calcular daño, defensa, habilidades, etc.
-🧪 ¿Qué puedes hacer ahora?
-Llamar a atacarConDado() o similar cada vez que el jugador quiera usar un dado.
-Pasarle al LanzadorDeDados el tipo de dado que quieres usar (por ejemplo, d6 para ataque normal, d20 para habilidad especial) y pre-seleccionarlo en el JComboBox.
-Mostrar el resultado en tu GUI principal en vez de en consola.

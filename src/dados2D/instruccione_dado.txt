@@ -1,0 +1,91 @@
+Vamos a conectar este lanzador de dados a tu juego de rol paso a paso, de forma clara y práctica.
+
+🔗 ¿Cómo conectar el lanzador de dados a tu juego?
+La clave está en comunicar tu lanzador (el Main con la interfaz gráfica) con la lógica de tu juego (personajes, combate, etc.).
+
+Existen varias formas de hacerlo, pero la más común y limpia es usar eventos o métodos de retorno para que cuando el usuario tire el dado, el resultado llegue a
+tu juego y lo use.
+
+
+✅ Forma 1: Lanzador como una "ventana emergente"
+Es la más común: tu juego lanza una ventana con el dado, el usuario lo tira, y cuando se cierra, el juego recibe el resultado.
+
+🔧 Paso 1: Hacer que Main devuelva el resultado
+Vamos a convertir Main en una ventana modal que se espere a que el usuario tire el dado y devuelva el valor.
+
+Creamos una nueva clase LanzadorDeDados.java (YA HECHO):
+
+
+🔧 Paso 2: Llamar al lanzador desde tu juego y usar el resultado
+Modificamos tu Juego.java para abrir la ventana del dado y usar el resultado:
+
+import dados3D.LanzadorDeDados;
+import javax.swing.SwingUtilities;
+
+public class Juego {
+    private Personaje jugador;
+    private Personaje enemigo;
+
+    public Juego() {
+        jugador = new Personaje("Héroe", 100, 15);
+        enemigo = new Personaje("Monstruo", 80, 12);
+    }
+
+    public void atacarConDado() {
+        LanzadorDeDados lanzador = new LanzadorDeDados(null); // null si no tienes una ventana principal
+        lanzador.setVisible(true); // Esto es modal, se queda aquí hasta que se cierre
+
+        Integer resultado = lanzador.obtenerResultado();
+        if (resultado != null) {
+            System.out.println("Has tirado el dado y salió: " + resultado);
+            int danio = jugador.getAtaque() + resultado;
+            enemigo.recibirDanio(danio);
+            System.out.println("Has atacado al " + enemigo.getNombre() + " por " + danio + " puntos de daño.");
+            System.out.println("Vida restante del enemigo: " + enemigo.getVida());
+        } else {
+            System.out.println("No se obtuvo un resultado del dado.");
+        }
+    }
+
+    public static void main(String[] args) {
+        Juego juego = new Juego();
+
+        // Ejemplo de uso: tirar un dado para atacar
+        SwingUtilities.invokeLater(() -> {
+            juego.atacarConDado();
+        });
+    }
+}
+
+class Personaje {
+    private String nombre;
+    private int vida;
+    private int ataque;
+
+    public Personaje(String nombre, int vida, int ataque) {
+        this.nombre = nombre;
+        this.vida = vida;
+        this.ataque = ataque;
+    }
+
+    public void recibirDanio(int danio) {
+        this.vida -= danio;
+        if (this.vida < 0) this.vida = 0;
+    }
+
+    public int getVida() { return vida; }
+    public String getNombre() { return nombre; }
+    public int getAtaque() { return ataque; }
+}
+
+✅ Resumen de la conexión:
+Tu juego llama a LanzadorDeDados como una ventana emergente.
+El usuario elige caras, tira el dado.
+El lanzador guarda el resultado en una variable.
+El lanzador cierra la ventana.
+Tu juego recupera el resultado con lanzador.obtenerResultado().
+Tu juego usa ese número para calcular daño, defensa, habilidades, etc.
+🧪 ¿Qué puedes hacer ahora?
+Llamar a atacarConDado() o similar cada vez que el jugador quiera usar un dado.
+Pasarle al LanzadorDeDados el tipo de dado que quieres usar (por ejemplo, d6 para ataque normal, d20 para habilidad especial) y pre-seleccionarlo en el JComboBox.
+Mostrar el resultado en tu GUI principal en vez de en consola.
