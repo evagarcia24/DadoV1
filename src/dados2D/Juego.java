@@ -1,43 +1,28 @@
 package dados2D;
 
-import dados2D.LanzadorDeDados;
-import javax.swing.SwingUtilities;
-
 public class Juego {
-	
-	    private Personaje jugador;
-	    private Personaje enemigo;
+    private Personaje jugador;
+    private Personaje enemigo;
 
-	    public Juego() {
-	        jugador = new Personaje("Héroe", 100, 15);
-	        enemigo = new Personaje("Monstruo", 80, 12);
-	    }
+    public Juego() {
+        jugador = new Personaje("Héroe", 100, 15);
+        enemigo = new Personaje("Monstruo", 80, 12);
+    }
 
-	    public void atacarConDado() {
-	        LanzadorDeDados lanzador = new LanzadorDeDados(null); // null si no tienes una ventana principal
-	        lanzador.setVisible(true); // Esto es modal, se queda aquí hasta que se cierre
+    public String atacarConDadoHtml() {
+        // Simulamos el lanzamiento de dado
+        int resultado = (int) (Math.random() * 6) + 1; // Dado de 6 caras
+        int danio = jugador.getAtaque() + resultado;
+        enemigo.recibirDanio(danio);
+        return "Has atacado con un dado y sacaste " + resultado + ". Daño total: " + danio + ". Vida del enemigo: " + enemigo.getVida();
+    }
 
-	        Integer resultado = lanzador.obtenerResultado();
-	        if (resultado != null) {
-	            System.out.println("Has tirado el dado y salió: " + resultado);
-	            int danio = jugador.getAtaque() + resultado;
-	            enemigo.recibirDanio(danio);
-	            System.out.println("Has atacado al " + enemigo.getNombre() + " por " + danio + " puntos de daño.");
-	            System.out.println("Vida restante del enemigo: " + enemigo.getVida());
-	        } else {
-	            System.out.println("No se obtuvo un resultado del dado.");
-	        }
-	    }
+    public String obtenerEstado() {
+        return "Jugador: " + jugador.getNombre() + " (Vida: " + jugador.getVida() + ") | Enemigo: " + enemigo.getNombre() + " (Vida: " + enemigo.getVida() + ")";
+    }
 
-	    public static void main(String[] args) {
-	        Juego juego = new Juego();
-
-	        // Ejemplo de uso: tirar un dado para atacar
-	        SwingUtilities.invokeLater(() -> {
-	            juego.atacarConDado();
-	        });
-	    }
-	}
-
-
-
+    public static void main(String[] args) throws Exception {
+        ServidorWeb servidor = new ServidorWeb();
+        servidor.iniciar();
+    }
+}

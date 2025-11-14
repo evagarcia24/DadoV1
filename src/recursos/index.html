@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Juego de Rol</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        #mensaje {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Juego de Rol</h1>
+    <button onclick="accion('atacar')">Atacar</button>
+    <button onclick="accion('defender')">Defender</button>
+    <button onclick="accion('estado')">Ver Estado</button>
+
+    <div id="mensaje">Esperando acción...</div>
+
+    <script>
+        async function accion(tipo) {
+            try {
+                const response = await fetch(`/accion?tipo=${tipo}`);
+                const data = await response.text();
+                document.getElementById('mensaje').innerText = data;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>
